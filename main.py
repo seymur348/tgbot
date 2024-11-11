@@ -1,57 +1,49 @@
 from loader import bot
-from handlers import start, movie_search, movie_by_rating, low_budget_movie, high_budget_movie
-from keyboard.inline import main_menu_keyboard, confirm_search_keyboard
+from handlers import start_handler, movie_search_handler, rating_search_handler, handle_low_budget_movies, handle_high_budget_movies, history_handler
 
-
-# Команда /start для главного меню
 @bot.message_handler(commands=['start'])
 def start_command(message):
-    bot.send_message(
-        message.chat.id,
-        "Добро пожаловать в Бот поиска фильмов! Выберите действие:",
-        reply_markup=main_menu_keyboard()
-    )
+    start_handler(message)
 
+@bot.message_handler(commands=['movie_search'])
+def movie_search_command(message):
+    movie_search_handler(message)
 
-# Обработчик для нажатий на кнопки
-@bot.callback_query_handler(func=lambda call: True)
-def callback_query(call):
-    if call.data == "search_by_title":
-        bot.send_message(call.message.chat.id, "Введите название фильма:")
-        bot.register_next_step_handler(call.message, movie_search.handle)
+@bot.message_handler(commands=['low_budget_movie'])
+def low_budget_command(message):
+    handle_low_budget_movies(message)
 
-    elif call.data == "search_by_rating":
-        bot.send_message(call.message.chat.id, "Введите минимальный рейтинг:")
-        bot.register_next_step_handler(call.message, movie_by_rating.handle)
+@bot.message_handler(commands=['high_budget_movie'])
+def high_budget_command(message):
+    handle_high_budget_movies(message)
 
-    elif call.data == "low_budget":
-        bot.send_message(call.message.chat.id, "Введите жанр для фильмов с низким бюджетом (или оставьте пустым):")
-        bot.register_next_step_handler(call.message, low_budget_movie.handle)
+@bot.callback_query_handler(func=lambda call: call.data == "search_by_title")
+def callback_search_by_title(call):
+    bot.send_message(call.message.chat.id, "Пожалуйста, введите название фильма для поиска.")
 
-    elif call.data == "high_budget":
-        bot.send_message(call.message.chat.id, "Введите жанр для фильмов с высоким бюджетом (или оставьте пустым):")
-        bot.register_next_step_handler(call.message, high_budget_movie.handle)
+@bot.callback_query_handler(func=lambda call: call.data == "search_by_rating")
+def callback_search_by_rating(call):
+    bot.send_message(call.message.chat.id, "Пожалуйста, введите рейтинг для поиска фильмов.")
 
+@bot.callback_query_handler(func=lambda call: call.data == "low_budget_movies")
+def callback_low_budget(call):
+    return low_budget_command(call.message)
 
-# Подтверждение выполнения поиска
-@bot.message_handler(commands=['confirm'])
-def confirm_search(message):
-    bot.send_message(message.chat.id, "Вы хотите выполнить поиск с указанными параметрами?",
-                     reply_markup=confirm_search_keyboard())
+@bot.callback_query_handler(func=lambda call: call.data == "high_budget_movies")
+def callback_high_budget(call):
+    return high_budget_command(call.message)
 
+@bot.callback_query_handler(func=lambda call: call.data == "history")
+def callback_history(call):
+    history_handler(call.message)
 
-@bot.callback_query_handler(func=lambda call: call.data == "confirm_search")
-def execute_search(call):
-    # Здесь выполняется поиск, выбранный пользователем
-    bot.send_message(call.message.chat.id, "Поиск выполняется...")
+@bot.callback_query_handler(func=lambda call: call.data == "search_another_movie")
+def handle_search_another_movie(call):
+    bot.send_message(call.message.chat.id, "Пожалуйста, введите новый рейтинг или название фильма для поиска.")
 
+@bot.callback_query_handler(func=lambda call: call.data == "main_menu")
+def handle_main_menu(call):
+    start_command(call.message)
 
-@bot.callback_query_handler(func=lambda call: call.data == "cancel_search")
-def cancel_search(call):
-    bot.send_message(call.message.chat.id, "Поиск отменен. Вы можете вернуться в главное меню для нового выбора.")
-    bot.send_message(call.message.chat.id, "Выберите действие:", reply_markup=main_menu_keyboard())
-
-
-# Запуск бота
-if __name__ == '__main__':
+if __name__ == "__main__":
     bot.polling(none_stop=True)

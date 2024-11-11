@@ -1,7 +1,5 @@
-from . import help
-from . import start
-from . import movie_search
-from . import movie_by_rating
-from . import high_budget_movie
-from . import low_budget_movie
-from . import history
+from .start import handle as start_handler
+from .movie_search import handle as movie_search_handler
+from .movie_by_rating import handle as rating_search_handler
+from .budget_movie import handle_low_budget_movies, handle_high_budget_movies
+from .history import handle as history_handler

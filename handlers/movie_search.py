@@ -1,6 +1,14 @@
 from api.kinopoisk import search_movie
 from data.database import save_search_history
 from loader import bot
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+
+def create_search_keyboard():
+    keyboard = InlineKeyboardMarkup()
+    search_again_button = InlineKeyboardButton("Найти другой фильм", callback_data="search_another_movie")
+    keyboard.add(search_again_button)
+    return keyboard
 
 
 def handle(message):
@@ -20,15 +28,16 @@ def handle(message):
 
         # Извлекаем жанры, если они есть
         genres = [genre.get("name", "Жанр отсутствует") for genre in movie.get("genres", [])]
-        genre = ", ".join(genres) if genres else "Жанр отсутствует"
+        genre_str = ", ".join(genres) if genres else "Жанр отсутствует"
 
         # Сохраняем историю поиска
-        save_search_history(title, description, rating, year, genre)
+        save_search_history(title, description, rating, year, genre_str)
 
-        # Отправляем ответ пользователю
+        # Отправляем результат пользователю с кнопками
         bot.send_message(
             message.chat.id,
-            f"Название: {title}\nОписание: {description}\nРейтинг: {rating}\nГод: {year}\nЖанр: {genre}"
+            f"Название: {title}\nОписание: {description}\nРейтинг: {rating}\nГод: {year}\nЖанр: {genre_str}",
+            reply_markup=create_search_keyboard()  # Добавляем клавиатуру с кнопкой
         )
     else:
         bot.send_message(message.chat.id, "Фильм не найден.")

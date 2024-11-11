@@ -1,5 +1,12 @@
 from api.kinopoisk import search_movie_by_rating
 from loader import bot
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+def create_rating_keyboard():
+    keyboard = InlineKeyboardMarkup()
+    search_again_button = InlineKeyboardButton("Найти другой фильм", callback_data="search_another_movie")
+    keyboard.add(search_again_button)
+    return keyboard
 
 def handle(message):
     try:
@@ -24,6 +31,13 @@ def handle(message):
                 message.chat.id,
                 f"Название: {title}\nОписание: {description}\nРейтинг: {movie_rating}\nГод: {year}\nЖанр: {genre_str}"
             )
+
+        # Отправляем сообщение с кнопками после отображения фильмов
+        bot.send_message(
+            message.chat.id,
+            "Что вы хотите сделать дальше?",
+            reply_markup=create_rating_keyboard()  # Добавляем клавиатуру с кнопками
+        )
     else:
         bot.send_message(message.chat.id, "Фильмы с указанным рейтингом не найдены.")
 

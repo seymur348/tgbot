@@ -1,9 +1,8 @@
-from data.database import MovieSearchHistory
+from data.database import save_search_history
 from loader import bot
 
-
 def handle(message):
-    history_records = MovieSearchHistory.select().order_by(MovieSearchHistory.timestamp.desc()).limit(5)
+    history_records = get_search_history()
 
     if history_records:
         for record in history_records:

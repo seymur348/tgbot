@@ -1,8 +1,13 @@
+import os
+from dotenv import load_dotenv
 from telebot import TeleBot
-from config_data.config import TELEGRAM_TOKEN
 from data.database import init_db
 
-bot = TeleBot(TELEGRAM_TOKEN)
+# Загрузка токенов из .env файла
+load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+
+bot = TeleBot(BOT_TOKEN)  # Инициализация бота с токеном
+
+# Инициализация базы данных
 init_db()
-
-
