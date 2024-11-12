@@ -1,22 +1,35 @@
 from api.kinopoisk import search_movies_by_budget
 from loader import bot
-from keyboard.inline import movie_search_keyboard
+from keyboard.inline import main_menu_keyboard
 
-def handle(message):
-    args = message.text.split(" ", 2)
-    if len(args) < 2 or args[1] not in ["низкий", "высокий"]:
-        bot.send_message(message.chat.id, "Пожалуйста, укажите тип бюджета (низкий или высокий) и опционально жанр.")
+@bot.message_handler(text=['Поиск по бюджету'])
+def request_movie_budget(message):
+    """
+    Запрашивает у пользователя тип бюджета для поиска фильмов.
+    """
+    bot.send_message(message.chat.id, "Введите тип бюджета (низкий или высокий) и, при необходимости, жанр:")
+
+@bot.message_handler(content_types=['text'])
+def handle_movie_budget_search(message):
+    """
+    Обрабатывает тип бюджета и жанр, выполняет поиск и отправляет результаты.
+    """
+    args = message.text.split(" ", 1)
+    budget_type = args[0].lower()
+    genre = args[1] if len(args) > 1 else None
+
+    if budget_type not in ["низкий", "высокий"]:
+        bot.send_message(message.chat.id, "Пожалуйста, укажите корректный тип бюджета (низкий или высокий).")
         return
 
-    budget_type = "low" if args[1] == "низкий" else "high"
-    genre = args[2] if len(args) > 2 else None
+    budget_key = "low" if budget_type == "низкий" else "high"
+    movies = search_movies_by_budget(budget_key, genre)
 
-    movies = search_movies_by_budget(budget_type, genre)
     if movies:
-        bot.send_message(
-            message.chat.id,
-            "Выберите фильм для просмотра подробной информации:",
-            reply_markup=movie_search_keyboard(movies[:5])  # Ограничиваем до 5 фильмов
+        response = "\n\n".join(
+            [f"Название: {movie['name']}\nБюджет: {movie.get('budget', {}).get('value', 'Нет данных')}"
+             for movie in movies[:5]]
         )
+        bot.send_message(message.chat.id, f"Найденные фильмы:\n\n{response}", reply_markup=main_menu_keyboard())
     else:
-        bot.send_message(message.chat.id, f"Фильмы с {args[1]} бюджетом не найдены.")
+        bot.send_message(message.chat.id, f"Фильмы с {budget_type} бюджетом не найдены.", reply_markup=main_menu_keyboard())

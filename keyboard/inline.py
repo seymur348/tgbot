@@ -1,42 +1,12 @@
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 def main_menu_keyboard():
     """
-    Главное меню с инлайн-кнопками для всех команд.
+    Создает клавиатуру с кнопками для основных команд.
     """
-    markup = InlineKeyboardMarkup()
-    markup.add(
-        InlineKeyboardButton("Поиск по названию", callback_data="search_by_title"),
-        InlineKeyboardButton("Поиск по рейтингу", callback_data="search_by_rating")
-    )
-    markup.add(
-        InlineKeyboardButton("Поиск по бюджету", callback_data="search_by_budget"),
-        InlineKeyboardButton("История поиска", callback_data="search_history")
-    )
-    return markup
-
-def movie_search_keyboard(movies):
-    """
-    Создает инлайн-клавиатуру для результатов поиска фильмов.
-    """
-    markup = InlineKeyboardMarkup()
-    for movie in movies:
-        markup.add(
-            InlineKeyboardButton(
-                movie["name"], callback_data=f"movie_{movie['id']}"
-            )
-        )
-    return markup
-
-def history_keyboard(movies):
-    """
-    Создает инлайн-клавиатуру для истории поиска, где каждая кнопка представляет найденный фильм.
-    """
-    markup = InlineKeyboardMarkup()
-    for movie in movies:
-        markup.add(
-            InlineKeyboardButton(
-                movie.title, callback_data=f"movie_{movie.id}"
-            )
-        )
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    markup.add(KeyboardButton("Поиск по названию"))
+    markup.add(KeyboardButton("Поиск по рейтингу"))
+    markup.add(KeyboardButton("Поиск по бюджету"))
+    markup.add(KeyboardButton("История поиска"))
     return markup

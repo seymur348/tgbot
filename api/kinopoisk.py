@@ -80,17 +80,14 @@ def search_movies_by_budget(budget_type, genre=None):
 
 def get_movie_details(movie_id):
     """
-    Получение подробной информации о фильме по его ID.
+    Получает полную информацию о фильме по его ID.
     """
-    url = f"{BASE_URL}/{movie_id}"
-    params = {
-        "token": KINOPOISK_API_KEY
-    }
-
+    url = f"https://api.kinopoisk.dev/v1.3/movie/{movie_id}"
+    params = {"token": KINOPOISK_API_KEY}
     try:
         response = requests.get(url, params=params)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Ошибка при запросе к API Кинопоиска: {e}")
-        return []
+        return None
