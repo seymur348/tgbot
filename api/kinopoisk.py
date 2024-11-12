@@ -1,5 +1,10 @@
+import os
+
 import requests
 from config_data.config import KINOPOISK_API_KEY
+from dotenv import load_dotenv
+load_dotenv()
+KINOPOISK_API_KEY = os.getenv('KINOPOISK_API_KEY')
 
 BASE_URL = 'https://api.kinopoisk.dev/v1.3/movie'
 
@@ -69,6 +74,23 @@ def search_movies_by_budget(budget_type, genre=None):
         response = requests.get(BASE_URL, params=params)
         response.raise_for_status()
         return response.json().get("docs", [])
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка при запросе к API Кинопоиска: {e}")
+        return []
+
+def get_movie_details(movie_id):
+    """
+    Получение подробной информации о фильме по его ID.
+    """
+    url = f"{BASE_URL}/{movie_id}"
+    params = {
+        "token": KINOPOISK_API_KEY
+    }
+
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Ошибка при запросе к API Кинопоиска: {e}")
         return []

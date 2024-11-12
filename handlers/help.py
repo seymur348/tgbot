@@ -1,4 +1,5 @@
 from loader import bot
+
 def handle(message):
     bot.send_message(message.chat.id, """
     /movie_search <название_фильма> - Поиск фильма по названию

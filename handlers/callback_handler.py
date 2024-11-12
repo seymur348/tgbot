@@ -1,21 +1,33 @@
-from loader import bot
+# handlers/callback_handler.py
+from telebot import types
 from api.kinopoisk import get_movie_details
+from loader import bot
+# Предполагается, что такая функция есть в API
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith("details_"))
 def send_movie_details(call):
-    movie_id = call.data.split("_")[1]
-    details = get_movie_details(movie_id)
+    # Получаем ID фильма из callback_data
+    movie_id = call.data.split('_')[1]  # Допустим, callback_data выглядит как 'movie_123'
 
-    if details:
-        title = details.get("name", "Название отсутствует")
-        description = details.get("description", "Описание отсутствует")
-        year = details.get("year", "Год отсутствует")
-        rating = details.get("rating", {}).get("kp", "Рейтинг отсутствует")
+    # Получаем информацию о фильме
+    movie_info = get_movie_details(movie_id)
 
-        bot.send_message(
-            call.message.chat.id,
-            f"Подробная информация:\nНазвание: {title}\nОписание: {description}\nГод: {year}\nРейтинг: {rating}"
-        )
+    # Проверяем, что movie_info не None
+    if movie_info:
+        # Формируем сообщение с информацией о фильме
+        message = f"Название: {movie_info['title']}\n"
+        message += f"Рейтинг: {movie_info['rating']}\n"
+        message += f"Описание: {movie_info['description']}\n"
+
+        # Отправляем ответ в чат
+        bot.send_message(call.message.chat.id, message)
+
+        # Можно добавить кнопки для взаимодействия с пользователем
+        keyboard = types.InlineKeyboardMarkup()
+        back_button = types.InlineKeyboardButton("Назад", callback_data="back")
+        keyboard.add(back_button)
+
+        bot.send_message(call.message.chat.id, "Вот информация о фильме:", reply_markup=keyboard)
     else:
-        bot.send_message(call.message.chat.id, "Подробности о фильме не найдены.")
+        # Если movie_info None, информируем пользователя
+        bot.send_message(call.message.chat.id, "Извините, информация о фильме не найдена.")

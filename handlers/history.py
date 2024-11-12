@@ -1,12 +1,16 @@
-from data.database import save_search_history
 from loader import bot
+from data.database import MovieSearchHistory
+from keyboard.inline import history_keyboard
+
 
 def handle(message):
-    history_records = get_search_history()
+    history_records = MovieSearchHistory.select().order_by(MovieSearchHistory.timestamp.desc()).limit(5)
 
     if history_records:
-        for record in history_records:
-            bot.send_message(message.chat.id,
-                             f"Название: {record.title}\nОписание: {record.description}\nРейтинг: {record.rating}\nГод: {record.year}\nЖанр: {record.genre}\n")
+        bot.send_message(
+            message.chat.id,
+            "Ваши последние найденные фильмы:",
+            reply_markup=history_keyboard(history_records)
+        )
     else:
         bot.send_message(message.chat.id, "История поиска пуста.")
