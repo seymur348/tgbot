@@ -1,23 +1,28 @@
-from peewee import *
-import datetime
+# database.py
+import peewee
+from datetime import datetime
 
-# Настройка базы данных (например, SQLite)
-db = SqliteDatabase('search_history.db')
+db = peewee.SqliteDatabase('history.db')  # Файл базы данных
 
-class BaseModel(Model):
+class SearchHistory(peewee.Model):
+    user_id = peewee.IntegerField()
+    search_type = peewee.CharField()       # Тип запроса (например, "Поиск по названию")
+    search_params = peewee.CharField()     # Параметры поиска
+    timestamp = peewee.DateTimeField(default=datetime.now)  # Время запроса
+
     class Meta:
         database = db
 
-class SearchHistory(BaseModel):
-    user_id = IntegerField()  # ID пользователя в Telegram
-    query = CharField()  # Запрос пользователя
-    description = TextField()  # Описание фильма
-    rating = FloatField()  # Рейтинг фильма
-    year = IntegerField()  # Год выпуска
-    genre = CharField()  # Жанр фильма
-    created_at = DateTimeField(default=datetime.datetime.now)  # Дата запроса
-
-# Инициализация базы данных
+# Инициализация базы данных и таблицы
 def init_db():
+    if not db.is_closed():
+        db.close()  # Закрываем, если база данных уже открыта
     db.connect()
     db.create_tables([SearchHistory], safe=True)
+def get_db_connection():
+    if not db.is_closed():
+        db.close()  # Закрываем, если база данных уже открыта
+    db.connect()
+    return db
+# Вызываем инициализацию при запуске
+init_db()

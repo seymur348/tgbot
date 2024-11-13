@@ -38,7 +38,7 @@ def search_movie_by_rating(min_rating, genre=None):
     Поиск фильмов с минимальным рейтингом и опциональным фильтром по жанру.
     """
     params = {
-        "rating.kp": f"{min_rating},10",  # Рейтинг от min_rating до 10
+        "rating.kp": f"{min_rating}-10",  # Рейтинг от min_rating до 10
         "token": KINOPOISK_API_KEY,
         "limit": 10
     }
@@ -48,7 +48,9 @@ def search_movie_by_rating(min_rating, genre=None):
     try:
         response = requests.get(BASE_URL, params=params)
         response.raise_for_status()
-        return response.json().get("docs", [])
+        data = response.json()
+        # Проверяем наличие фильмов и возвращаем их
+        return data.get("docs", [])
     except requests.exceptions.RequestException as e:
         print(f"Ошибка при запросе к API Кинопоиска: {e}")
         return []
@@ -60,7 +62,8 @@ def search_movies_by_budget(budget_type, genre=None):
     budget_limit = 10000000  # 10 миллионов
     params = {
         "token": KINOPOISK_API_KEY,
-        "limit": 10
+        "limit": 10,
+        "selectFields": "name rating.kp description",  # Запрашиваем только нужные поля
     }
     if budget_type == "low":
         params["budget.value"] = f"0,{budget_limit}"
@@ -78,11 +81,12 @@ def search_movies_by_budget(budget_type, genre=None):
         print(f"Ошибка при запросе к API Кинопоиска: {e}")
         return []
 
+
 def get_movie_details(movie_id):
     """
     Получает полную информацию о фильме по его ID.
     """
-    url = f"https://api.kinopoisk.dev/v1.3/movie/{movie_id}"
+    url = f"{BASE_URL}/{movie_id}"
     params = {"token": KINOPOISK_API_KEY}
     try:
         response = requests.get(url, params=params)

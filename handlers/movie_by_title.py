@@ -1,6 +1,8 @@
 from loader import bot
 from api.kinopoisk import search_movie
 from keyboard.reply_keyboard import main_menu_keyboard
+from data.database import SearchHistory
+
 
 @bot.message_handler(regexp="Поиск по названию")
 def request_movie_title(message):
@@ -19,6 +21,12 @@ def handle_movie_title_search(message):
     genre = args[1] if len(args) > 1 else None
 
     movies = search_movie(title, genre)
+
+    SearchHistory.create(
+        user_id=message.from_user.id,
+        search_type="Поиск по названию",
+        search_params=f"{title} {genre if genre else ''}".strip()
+    )
     if movies:
         # Формируем ответ с добавлением описания фильма
         response = "\n\n".join([
